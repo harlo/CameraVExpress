@@ -1,0 +1,6 @@
+[submodule "image/lib/JavaMediaHasher"]
+	path = image/lib/JavaMediaHasher
+	url = git@github.com:n8fr8/JavaMediaHasher.git
+[submodule "image/lib/Jpeg-Redaction-Library"]
+	path = image/lib/Jpeg-Redaction-Library
+	url = git@github.com:harlo/Jpeg-Redaction-Library.git
