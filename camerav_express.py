@@ -13,6 +13,8 @@ if __name__ == "__main__":
 	res = False
 	if argv[1] == "image":
 		from image.parser import parse_image as parse_media
+	elif argv[1] == "video":
+		from video.parse import parse_video as parse_media
 
 	try:
 		res = parse_media(os.path.abspath(argv[2]), None if len(argv) is 3 else os.path.abspath(argv[3]))

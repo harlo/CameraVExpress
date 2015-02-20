@@ -4,3 +4,6 @@
 [submodule "image/lib/Jpeg-Redaction-Library"]
 	path = image/lib/Jpeg-Redaction-Library
 	url = git@github.com:harlo/Jpeg-Redaction-Library.git
+[submodule "video/lib/FFmpeg"]
+	path = video/lib/FFmpeg
+	url = git@github.com:FFmpeg/FFmpeg.git
