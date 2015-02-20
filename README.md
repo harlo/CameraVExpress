@@ -10,4 +10,4 @@ Then, run `./install.sh` to build the utility.
 
 ### Usage
 
-run `./camerav_express.sh [file] [output file]`.  Output file is optional.
+run `./camerav_express.sh [file]`.

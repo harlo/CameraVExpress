@@ -16,37 +16,17 @@ def b64decode(content):
 	
 	return None
 
-def parse_video(vid, out_file):
+def parse_video(vid):
 	print "parsing video %s" % vid
+	out_file = "%s.json" % vid
 
-	j3m_data = StringIO()
-
-	cmd = ["ffmpeg", "-y", "-dump_attachment:t", vid, "-i"]
+	cmd = ["ffmpeg", "-y", "-dump_attachment:t", out_file, "-i", vid]
 	print " ".join(cmd)
 
 	p = Popen(cmd, stdout=PIPE, close_fds=True)
-	data = p.stdout.readline()
+	p.wait()
 
-	while data:
-		data = data.strip()
-		
-		print data
-
-		j3m_data.write(data)
-		data = p.stdout.readline()
-
-	p.stdout.close()
-
-	try:
-		j3m_data = b64decode(j3m_data.getvalue())
-		print j3m_data
-
-		if out_file is not None:
-			with open(out_file, 'wb+') as OUT:
-				OUT.write(j3m_data)
-
+	if os.path.exists("%s.json" % vid):
 		return True
-	except Exception as e:
-		print e, type(e)
 
 	return False

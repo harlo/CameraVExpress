@@ -2,8 +2,9 @@ import os, re, json
 from subprocess import Popen, PIPE
 from cStringIO import StringIO
 
-def parse_image(img, out_file):
+def parse_image(img):
 	print "parsing image %s" % img
+	out_file = "%s.json" % img
 
 	j3m_data = StringIO()
 	obscura_marker_found = False
