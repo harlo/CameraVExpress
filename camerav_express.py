@@ -59,6 +59,4 @@ if __name__ == "__main__":
 	except Exception as e:
 		print e, type(e)
 
-	
-
 	exit(-1 if not res else 0)
