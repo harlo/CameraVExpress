@@ -38,11 +38,9 @@ def parse_image(img):
 
 	try:
 		j3m_data = j3m_data.getvalue()
-		print j3m_data
 
-		if out_file is not None:
-			with open(out_file, 'wb+') as OUT:
-				OUT.write(j3m_data)
+		with open(out_file, 'wb+') as OUT:
+			OUT.write(j3m_data)
 
 		return True, out_file
 	except Exception as e:

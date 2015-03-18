@@ -19,7 +19,8 @@ def camerav_parser(file_description, file_path):
 		res, output = parse_media(os.path.abspath(file_path))
 		output = {
 			'mime_type' : mime_type,
-			'data' : output
+			'data' : output,
+			'original_file' : file_path
 		}
 
 		return res, output
@@ -48,7 +49,13 @@ if __name__ == "__main__":
 
 	try:
 		res, output = camerav_parser(argv[1], argv[2])
-		print "Output :\n%s" % output
+		print_out = [
+			"Mime Type : %(mime_type)s",
+			"Original file : %(original_file)s",
+			"Output data : %(data)s"
+		]
+
+		print "***\n\n%s\n\n***" % ("\n".join([p % output for p in print_out]))
 	except Exception as e:
 		print e, type(e)
 
