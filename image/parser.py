@@ -4,12 +4,12 @@ from cStringIO import StringIO
 
 def parse_image(img):
 	print "parsing image %s" % img
-	out_file = "%s.json" % img
+	out_file = "%s.j3m" % img
 
 	j3m_data = StringIO()
 	obscura_marker_found = False
 
-	cmd = [os.path.join("image", "lib", "j3mparser.out"), img]
+	cmd = [os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib", "j3mparser.out"), img]
 	print " ".join(cmd)
 
 	p = Popen(cmd, stdout=PIPE, close_fds=True)
@@ -44,7 +44,7 @@ def parse_image(img):
 			with open(out_file, 'wb+') as OUT:
 				OUT.write(j3m_data)
 
-		return True
+		return True, out_file
 	except Exception as e:
 		print e, type(e)
 

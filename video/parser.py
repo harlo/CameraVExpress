@@ -2,6 +2,10 @@ import os, re, json, base64
 from subprocess import Popen, PIPE
 from cStringIO import StringIO
 
+BASH_CMD = {
+	'DUMP_ATTACHMENT' : "ffmpeg -y -dump_attachment:t %s -i %s"
+}
+
 def b64decode(content):
 	try:
 		return base64.b64decode(content)
@@ -18,15 +22,15 @@ def b64decode(content):
 
 def parse_video(vid):
 	print "parsing video %s" % vid
-	out_file = "%s.json" % vid
+	out_file = "%s.j3m" % vid
 
-	cmd = ["ffmpeg", "-y", "-dump_attachment:t", out_file, "-i", vid]
+	cmd = (BASH_CMD['DUMP_ATTACHMENT'] % (out_file, vid)).split(" ")
 	print " ".join(cmd)
 
 	p = Popen(cmd, stdout=PIPE, close_fds=True)
 	p.wait()
 
-	if os.path.exists("%s.json" % vid):
-		return True
+	if os.path.exists(out_file):
+		return True, out_file
 
 	return False
