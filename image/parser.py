@@ -2,7 +2,7 @@ import os, re, json
 from subprocess import Popen, PIPE
 from cStringIO import StringIO
 
-def parse_image(img):
+def parse_image(img, out_dir=None):
 	print "parsing image %s" % img
 	out_file = "%s.j3m" % img
 

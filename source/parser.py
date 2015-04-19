@@ -7,7 +7,7 @@ BASH_CMD = {
 	'MKDIR' : "mkdir %s"
 }
 
-def parse_source(source):
+def parse_source(source, out_dir=None):
 	print "parsing source %s" % source
 	
 
@@ -24,7 +24,10 @@ def parse_source(source):
 				print "Invalid zip: unknown file in archive."
 				return False
 
-	out_dir = source.replace(".zip", "")
+	if out_dir is None:
+		out_dir = source.replace(".zip", "")
+	else:
+		out_dir = os.path.join(out_dir, source.split("/")[-1])
 	
 	cmd = (BASH_CMD['MKDIR'] % out_dir).split(" ")
 	p = Popen(cmd, stdout=PIPE, close_fds=True)

@@ -6,7 +6,7 @@ BASH_CMD = {
 	'DUMP_ATTACHMENT' : "ffmpeg -y -dump_attachment:t %s -i %s"
 }
 
-def b64decode(content):
+def b64decode(content, out_dir=None):
 	try:
 		return base64.b64decode(content)
 	except TypeError as e:

@@ -1,7 +1,7 @@
 import os, re
 from sys import argv, exit
 
-def camerav_parser(file_description, file_path):
+def camerav_parser(file_description, file_path, out_dir=None):
 	if not os.path.exists(file_path):
 		print "bad input file"
 		return False
@@ -16,7 +16,7 @@ def camerav_parser(file_description, file_path):
 		from source.parser import parse_source as parse_media
 
 	try:
-		res, output = parse_media(os.path.abspath(file_path))
+		res, output = parse_media(os.path.abspath(file_path), out_dir=out_dir)
 		output = {
 			'mime_type' : mime_type,
 			'data' : output,
