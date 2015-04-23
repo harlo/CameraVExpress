@@ -4,19 +4,23 @@ from cStringIO import StringIO
 
 def parse_image(img, out_dir=None):
 	print "parsing image %s" % img
+
 	out_file = "%s.j3m" % img
 
+	if out_dir is not None:
+		out_file = os.path.join(out_dir, out_file.split("/")[-1])
+	
 	j3m_data = StringIO()
 	obscura_marker_found = False
 
 	cmd = [os.path.join(os.path.dirname(os.path.abspath(__file__)), "lib", "j3mparser.out"), img]
-	print " ".join(cmd)
 
 	p = Popen(cmd, stdout=PIPE, close_fds=True)
 	data = p.stdout.readline()
 
 	while data:
 		data = data.strip()
+		print data
 
 		if re.match(r'^file: .*', data):
 			pass
@@ -35,6 +39,7 @@ def parse_image(img, out_dir=None):
 		data = p.stdout.readline()
 
 	p.stdout.close()
+
 
 	try:
 		j3m_data = j3m_data.getvalue()

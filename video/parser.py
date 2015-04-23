@@ -6,7 +6,7 @@ BASH_CMD = {
 	'DUMP_ATTACHMENT' : "ffmpeg -y -dump_attachment:t %s -i %s"
 }
 
-def b64decode(content, out_dir=None):
+def b64decode(content):
 	try:
 		return base64.b64decode(content)
 	except TypeError as e:
@@ -20,12 +20,14 @@ def b64decode(content, out_dir=None):
 	
 	return None
 
-def parse_video(vid):
+def parse_video(vid, out_dir=None):
 	print "parsing video %s" % vid
 	out_file = "%s.j3m" % vid
 
+	if out_dir is not None:
+		out_file = os.path.join(out_dir, out_file.split("/")[-1])
+
 	cmd = (BASH_CMD['DUMP_ATTACHMENT'] % (out_file, vid)).split(" ")
-	print " ".join(cmd)
 
 	p = Popen(cmd, stdout=PIPE, close_fds=True)
 	p.wait()
