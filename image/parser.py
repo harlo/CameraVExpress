@@ -19,7 +19,6 @@ def parse_image(img, out_dir=None):
 	data = p.stdout.readline()
 
 	while data:
-		data = data.strip()
 		print data
 
 		if re.match(r'^file: .*', data):
@@ -44,11 +43,33 @@ def parse_image(img, out_dir=None):
 	try:
 		j3m_data = j3m_data.getvalue()
 
-		with open(out_file, 'wb+') as OUT:
-			OUT.write(j3m_data)
+		gpg_sentenel = ["-----BEGIN PGP MESSAGE-----", "Version: BCPG v@RELEASE_NAME@"]
+		if j3m_data.split('\n')[:2] == gpg_sentenel:
+			print "Now decrypting..."
+
+			j3m_asc = "%s.asc" % out_file
+			
+			with open(j3m_asc, 'wb+') as OUT:
+				OUT.write(j3m_data)
+
+			cmd = ["gpg", "--yes", "--output", out_file, "--decrypt", j3m_asc]
+
+			p = Popen(cmd, stdout=PIPE, close_fds=True)
+			data = p.stdout.readline()
+
+			while data:
+				data = data.strip()
+				data = p.stdout.readline()
+			p.stdout.close()
+
+
+		else:
+			with open(out_file, 'wb+') as OUT:
+				OUT.write(j3m_data)
 
 		return True, out_file
 	except Exception as e:
+		print "could not get j3m data from this image"
 		print e, type(e)
 
 	return False

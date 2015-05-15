@@ -1,12 +1,18 @@
 import os, re, csv
 from sys import argv, exit
 
-def camerav_parser(file_description, file_path, out_dir=None):
+def camerav_parser(file_description, out_dir=None):
+	try:
+		file_path, mime_type = parse_file_description(file_description)
+	except Exception as e:
+		print e, type(e)
+		return False
+
 	if not os.path.exists(file_path):
 		print "bad input file"
 		return False
 
-	mime_type = get_mime_type(file_description)
+	print file_path, mime_type
 
 	if mime_type == "image":
 		from image.parser import parse_image as parse_media
@@ -19,29 +25,57 @@ def camerav_parser(file_description, file_path, out_dir=None):
 
 	try:
 		res, output = parse_media(os.path.abspath(file_path), out_dir=out_dir)
+		print "OUTPUT"
+		print output
+
 		output = {
 			'mime_type' : mime_type,
 			'data' : output,
 			'original_file' : file_path
 		}
+		print output
 
 		if mime_type == "j3mlog" and type(output['data']) is list:
 			unpacked_data = []
 			for idx, d in enumerate(output['data']):
-				asset_mime_type = re.match(r'.+\.(jpg|mkv)$', data)
+				print "%d: %s" % (idx, d)
+
+				asset_mime_type = re.findall(r'.+\.(jpg|mkv)$', d)
 				
-				if asset_mime_type:
+				
+				if len(asset_mime_type) == 1:
+					print asset_mime_type
+					if asset_mime_type[0] == "jpg":
+						from image.parser import parse_image as parse_sub_media
+					elif asset_mime_type[0] == "mkv":
+						from video.parser import parse_video as parse_sub_media
+					else:
+						continue
+
 					try:
-						output['data'][idx] = camerav_parser("image" if asset_mime_type == "jpg" else "mkv")
+						res, sub_output = parse_sub_media(os.path.abspath(d), out_dir=out_dir)
+						if res:
+							output['data'][idx] = sub_output
 					except Exception as e:
 						print e, type(e)
 
 		return res, output
 		
 	except Exception as e:
+		print "Could not parse media:"
 		print e, type(e)
 
 	return False
+
+def parse_file_description(file_description):
+	mime_type = get_mime_type(file_description)
+	
+	if mime_type is not None:
+		fd = file_description.split(": ")
+		if len(fd) == 2:
+			return fd[0], mime_type
+
+	return None
 
 def get_mime_type(file_description):
 	if re.match(r'.*JPEG image data$', file_description):
@@ -95,21 +129,21 @@ def convert_to_csv(json_files):
 	return False
 
 if __name__ == "__main__":
-	if len(argv) not in [3, 4]:
-		print "usage: camerav_express [mime_type] [media file]"
+	if len(argv) not in [2, 3]:
+		print "usage: camerav_express [media file] [mime_type] (--with-csv)"
 		exit(-1)
 
 	res = False
 
 	try:
-		res, output = camerav_parser(argv[1], argv[2])
+		res, output = camerav_parser(argv[1])
 		print_out = [
 			"Mime Type : %(mime_type)s",
 			"Original file : %(original_file)s",
 			"Output data : %(data)s"
 		]
 
-		if len(argv) == 4 and argv[3] == "--with-csv":
+		if len(argv) == 3 and argv[2] == "--with-csv":
 			convert_to_csv(output['data'])
 
 		print "***\n\n%s\n\n***" % ("\n".join([p % output for p in print_out]))
