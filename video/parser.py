@@ -2,6 +2,8 @@ import os, re, json, base64
 from subprocess import Popen, PIPE
 from cStringIO import StringIO
 
+from utils.gpg import decrypt_file, gpg_sentinel
+
 BASH_CMD = {
 	'DUMP_ATTACHMENT' : "ffmpeg -y -dump_attachment:t %s -i %s"
 }
@@ -32,7 +34,20 @@ def parse_video(vid, out_dir=None):
 	p = Popen(cmd, stdout=PIPE, close_fds=True)
 	p.wait()
 
-	if os.path.exists(out_file):
-		return True, out_file
+	if not os.path.exists(out_file):
+		return False
 
-	return False
+	with open(out_file, 'rb') as J:
+		j3m_data = J.read()
+
+	if j3m_data.split('\n')[:2] == gpg_sentinel:
+		print "Now decrypting..."
+
+		j3m_asc = "%s.asc" % out_file
+		with open(j3m_asc, 'wb+') as OUT:
+			OUT.write(j3m_data)
+
+		decrypt_file(j3m_asc, out_file)
+		
+	return True, out_file
+

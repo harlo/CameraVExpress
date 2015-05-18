@@ -2,6 +2,8 @@ import re, os
 from base64 import b64encode
 from subprocess import Popen, PIPE
 
+from utils.gpg import decrypt_file, gpg_sentinel
+
 def get_log_data(from_file):
 	log_data = None
 
@@ -29,10 +31,7 @@ def parse_j3mlog(log, out_dir=None):
 	else:
 		out_dir = os.path.dirname(log)
 
-	# is it b64'd? (i.e. starts with LS0tblahblah)
-	gpg_sentenel = ["-----BEGIN PGP MESSAGE-----", "Version: BCPG v@RELEASE_NAME@"]
-	
-	if log_data.split('\n')[0] == b64encode('\n'.join(gpg_sentenel)):
+	if log_data.split('\n')[0] == b64encode('\n'.join(gpg_sentinel)):
 		print "Now un-b64ing..."
 
 		log_alias = "%s.unb64ed" % log_alias
@@ -52,22 +51,13 @@ def parse_j3mlog(log, out_dir=None):
 		log_data = get_log_data(last_state)
 
 	# is it pgp? (i.e. starts with BEGIN PGP MESSAGE)
-	if log_data.split('\n')[:2] == gpg_sentenel:
+	if log_data.split('\n')[:2] == gpg_sentinel:
 		print "Now decrypting..."
 
 		log_alias = "%s.decrypted" % log_alias
 
 		# if so, prompt user to decrypt
-		cmd = ["gpg", "--yes", "--output", os.path.join(out_dir, log_alias), \
-			"--decrypt", last_state]
-
-		p = Popen(cmd, stdout=PIPE, close_fds=True)
-		data = p.stdout.readline()
-
-		while data:
-			data = data.strip()
-			data = p.stdout.readline()
-		p.stdout.close()
+		decrypt_file(last_state, os.path.join(out_dir, log_alias))
 
 		last_state = log_alias
 		log_data = get_log_data(last_state)

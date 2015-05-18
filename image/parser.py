@@ -1,6 +1,8 @@
 import os, re, json
-from subprocess import Popen, PIPE
 from cStringIO import StringIO
+from subprocess import Popen, PIPE
+
+from utils.gpg import decrypt_file, gpg_sentinel
 
 def parse_image(img, out_dir=None):
 	print "parsing image %s" % img
@@ -19,8 +21,6 @@ def parse_image(img, out_dir=None):
 	data = p.stdout.readline()
 
 	while data:
-		print data
-
 		if re.match(r'^file: .*', data):
 			pass
 		elif re.match(r'^Generic APPn .*', data):
@@ -43,8 +43,7 @@ def parse_image(img, out_dir=None):
 	try:
 		j3m_data = j3m_data.getvalue()
 
-		gpg_sentenel = ["-----BEGIN PGP MESSAGE-----", "Version: BCPG v@RELEASE_NAME@"]
-		if j3m_data.split('\n')[:2] == gpg_sentenel:
+		if j3m_data.split('\n')[:2] == gpg_sentinel:
 			print "Now decrypting..."
 
 			j3m_asc = "%s.asc" % out_file
@@ -52,16 +51,7 @@ def parse_image(img, out_dir=None):
 			with open(j3m_asc, 'wb+') as OUT:
 				OUT.write(j3m_data)
 
-			cmd = ["gpg", "--yes", "--output", out_file, "--decrypt", j3m_asc]
-
-			p = Popen(cmd, stdout=PIPE, close_fds=True)
-			data = p.stdout.readline()
-
-			while data:
-				data = data.strip()
-				data = p.stdout.readline()
-			p.stdout.close()
-
+			decrypt_file(j3m_asc, out_file)
 
 		else:
 			with open(out_file, 'wb+') as OUT:

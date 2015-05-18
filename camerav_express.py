@@ -25,23 +25,19 @@ def camerav_parser(file_description, out_dir=None):
 
 	try:
 		res, output = parse_media(os.path.abspath(file_path), out_dir=out_dir)
-		print "OUTPUT"
-		print output
 
 		output = {
 			'mime_type' : mime_type,
 			'data' : output,
 			'original_file' : file_path
 		}
-		print output
 
 		if mime_type == "j3mlog" and type(output['data']) is list:
 			unpacked_data = []
+			print "Unpacking assets..."
+			
 			for idx, d in enumerate(output['data']):
-				print "%d: %s" % (idx, d)
-
 				asset_mime_type = re.findall(r'.+\.(jpg|mkv)$', d)
-				
 				
 				if len(asset_mime_type) == 1:
 					print asset_mime_type
@@ -90,11 +86,15 @@ def get_mime_type(file_description):
 	return None
 
 def convert_to_csv(json_files):
+	from json import loads
+	print "***\n\nConverting J3M data to CSV format...\n\n***"
+
 	if type(json_files) in [str, unicode]:
 		json_files = [json_files]
 
 	try:
 
+		csv_files = []
 		for json_file in json_files:
 			with open(json_file, 'rb') as J:
 				try:
@@ -103,25 +103,36 @@ def convert_to_csv(json_files):
 					print e, type(e)
 					continue
 
-			with open("%s.csv" % json_file, 'wb+') as C:
+			if len(data.keys()) == 2 and ('j3m' in data.keys() and 'signature' in data.keys()):
+				data = data['j3m']
+
+			if 'sensorCapture' not in data['data'].keys() or 'userAppendedData' not in data['data'].keys():
+				print "%s contains for real data for CSV" % json_file
+				continue
+
+			csv_file = "%s.csv" % json_file
+
+			with open(csv_file, 'wb+') as C:
 				csv_ = csv.writer(C, delimiter=',')
 				csv_.writerow(['timestamp', 'sensor_type', 'sensor_value'])
 
-				for reading in data['data']['sensorCapture']:
-					if 'sensorPlayback' in reading.keys() and 'timestamp' in reading.keys():
-						for r in reading['sensorPlayback'].keys():
-							csv_.writerow([reading['timestamp'], r, reading['sensorPlayback'[r]]])
+				if 'sensorCapture' in data['data'].keys():
+					for reading in data['data']['sensorCapture']:
+						if 'sensorPlayback' in reading.keys() and 'timestamp' in reading.keys():
+							for r in reading['sensorPlayback'].keys():
+								csv_.writerow([reading['timestamp'], r, reading['sensorPlayback'][r]])
 
-				if 'userAppendedData' not in data['data'].keys():
-					continue
+				if 'userAppendedData' in data['data'].keys():
+					for uad in data['data']['userAppendedData']:
+						if 'timestamp' in uad.keys() and 'associatedForms' in uad.keys():
+							for a in [a['answerData'] for a in uad['associatedForms']]:
+								for ad in a.keys():
+									csv_.writerow([uad['timestamp'], ad, a[ad]])
 
-				for uad in data['data']['userAppendedData']:
-					if 'timestamp' in uad.keys() and 'associatedForms' in uad.keys():
-						for a in [a['answerData'] for a in uad['associatedForms']]:
-							for ad in a.keys():
-								csv_.writerow([uad['timestamp'], ad, a[ad]])
+			csv_files.append(csv_file)
 
-			return True
+		if len(csv_files) != 0:
+			return True, csv_files
 
 	except Exception as e:
 		print e, type(e)
@@ -133,6 +144,7 @@ if __name__ == "__main__":
 		print "usage: camerav_express [media file] [mime_type] (--with-csv)"
 		exit(-1)
 
+	print argv
 	res = False
 
 	try:
@@ -144,7 +156,15 @@ if __name__ == "__main__":
 		]
 
 		if len(argv) == 3 and argv[2] == "--with-csv":
-			convert_to_csv(output['data'])
+			try:
+				cres, csv_files = convert_to_csv(output['data'])
+
+				if cres:
+					print_out.append("Generated CSV files: %s" % csv_files)
+
+			except Exception as e:
+				print "Could not generate csv files."
+				print e, type(e)
 
 		print "***\n\n%s\n\n***" % ("\n".join([p % output for p in print_out]))
 	except Exception as e:
