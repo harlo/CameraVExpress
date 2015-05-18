@@ -10,4 +10,4 @@ Then, run `./install.sh` to build the utility.
 
 ### Usage
 
-run `./camerav_express.sh [file]`.
+Run `./camerav_express.sh [file] --with-csv`.  The `--with-csv` flag is optional.
