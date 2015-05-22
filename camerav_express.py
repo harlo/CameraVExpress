@@ -74,7 +74,7 @@ def parse_file_description(file_description):
 	return None
 
 def get_mime_type(file_description):
-	if re.match(r'.*JPEG image data$', file_description):
+	if re.match(r'.*JPEG image data(:?, EXIF standard)$', file_description):
 		return "image"
 	elif re.match(r'.*\.mkv: data$', file_description):
 		return "video"
