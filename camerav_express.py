@@ -106,8 +106,8 @@ def convert_to_csv(json_files):
 			if len(data.keys()) == 2 and ('j3m' in data.keys() and 'signature' in data.keys()):
 				data = data['j3m']
 
-			if 'sensorCapture' not in data['data'].keys() or 'userAppendedData' not in data['data'].keys():
-				print "%s contains for real data for CSV" % json_file
+			if 'sensorCapture' not in data['data'].keys():
+				print "%s contains no real data for CSV" % json_file
 				continue
 
 			csv_file = "%s.csv" % json_file
